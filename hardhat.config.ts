@@ -20,12 +20,23 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
+const LACHAIN_RPC_URL = process.env.LACHAIN_RPC_URL;
+const LACHAIN_EXPLORER_URL = process.env.LACHAIN_EXPLORER_URL;
+const LATESTNET_RPC_URL = process.env.LATESTNET_RPC_URL;
+const LATESTNET_EXPLORER_URL = process.env.LATESTNET_EXPLORER_URL;
+
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
   solidity: "0.8.4",
   networks: {
+    lachain: {
+      url: LACHAIN_RPC_URL,
+      accounts: accountUtils.getAccounts(),
+      chainId: 274,
+      gasPrice: 50000000000,
+    },
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
       accounts: accountUtils.getAccounts(),
@@ -37,11 +48,7 @@ const config: HardhatUserConfig = {
     kubchain_test: {
       url: `https://rpc-testnet.bitkubchain.io`,
       accounts: accountUtils.getAccounts(),
-    },
-    goerli: {
-      url: process.env.GOERLI_URL || "",
-      accounts: accountUtils.getAccounts(),
-    },
+    }
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
