@@ -7,6 +7,8 @@ contract SlotMachine {
     INativeVRF public nativeVRF;
     uint256 public spinFee = 0.01 ether;
     uint256 public rewardMultiplier = 10;
+    uint256 public constant luckPosibility = 10;
+    address public owner;
 
     mapping(uint256 => address) public spinRequests;
     mapping(address => uint256) public pendingRewards;
@@ -19,9 +21,20 @@ contract SlotMachine {
     );
 
     event SpinRequested(address indexed player, uint256 indexed requestId);
+    event OwnershipTransferred(
+        address indexed previousOwner,
+        address indexed newOwner
+    );
+
+    modifier onlyOwner() {
+        require(owner == msg.sender, "Caller is not the owner");
+        _;
+    }
 
     constructor(address nativeVRFAddress) {
         nativeVRF = INativeVRF(nativeVRFAddress);
+        owner = msg.sender;
+        emit OwnershipTransferred(address(0), msg.sender);
     }
 
     modifier validRequestIds(uint256[] memory requestIds) {
@@ -32,6 +45,17 @@ contract SlotMachine {
             "Random result not available for the last request ID"
         );
         _;
+    }
+
+    function transferOwnership(address newOwner) public onlyOwner {
+        require(newOwner != address(0), "New owner is the zero address");
+        emit OwnershipTransferred(owner, newOwner);
+        owner = newOwner;
+    }
+
+    function getSpinResult(uint256 requestId) external view returns (bool won) {
+        uint256 randomResult = nativeVRF.randomResults(requestId);
+        return randomResult % luckPosibility == 0;
     }
 
     function spin(uint256 numSpins) external payable {
@@ -58,7 +82,7 @@ contract SlotMachine {
             require(player != address(0), "Invalid requestId");
             require(randomResult > 0, "Random result not available");
 
-            bool won = randomResult % 10 == 0; // 10% chance to win
+            bool won = randomResult % luckPosibility == 0; // 10% chance to win
             if (won) {
                 uint256 reward = spinFee * rewardMultiplier;
                 pendingRewards[player] += reward;
@@ -78,6 +102,14 @@ contract SlotMachine {
 
     function isResultAvailable(uint256 requestId) external view returns (bool) {
         return requestId <= nativeVRF.latestFulfillId();
+    }
+
+    function withdraw(uint256 amount) external onlyOwner {
+        require(
+            amount <= address(this).balance,
+            "Insufficient balance in contract"
+        );
+        payable(owner).transfer(amount);
     }
 
     receive() external payable {}
