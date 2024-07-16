@@ -7,6 +7,8 @@ import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 import accountUtils from "./utils/accountUtils";
+require("./tasks/spin");
+require("./tasks/spinFullfilment");
 
 dotenv.config();
 
