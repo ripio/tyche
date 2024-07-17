@@ -28,7 +28,7 @@ const convertSignatureLocal = (signature: utils.BytesLike) => {
     return ethers.BigNumber.from(truncatedNumber);
 }
 
-const calculateRandomInput = async (signer: SignerWithAddress, nativeVRF: NativeVRF, requestId: string) => {
+export const calculateRandomInput = async (signer: SignerWithAddress, nativeVRF: NativeVRF, requestId: string) => {
     let input = 0;
     let found = 0;
 
@@ -53,7 +53,7 @@ const calculateRandomInput = async (signer: SignerWithAddress, nativeVRF: Native
     return { input: found, signature };
 }
 
-const decordOutputs = (receipt: ContractReceipt) => {
+export const decordOutputs = (receipt: ContractReceipt) => {
     const events = receipt.events;
     if (!events) return [];
     return events.filter(e => e.event).map(e => [e.event, e.args]);
